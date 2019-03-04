@@ -46,12 +46,15 @@ courier HttpPort {
            checkResoucesByEtagRequest.operation = request.operation;
            checkResoucesByEtag@Frontend(checkResoucesByEtagRequest)(checkResoucesByEtagResponse);
            if (request.IfNoneMatch == checkResoucesByEtagResponse.ETag){
-               statusCode = 304
+               statusCode = 304;
+               response ="";
+               ETag = checkResoucesByEtagResponse.ETag
            }else{
              forward( request )( responseForward );
              response = responseForward;
              format =  responseForward.format;
-             mime =  responseForward.mime
+             mime =  responseForward.mime;
+             ETag = checkResoucesByEtagResponse.ETag
            }
     }
 }
