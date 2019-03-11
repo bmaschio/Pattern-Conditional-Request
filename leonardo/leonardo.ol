@@ -1,10 +1,7 @@
 include "string_utils.iol"
+include "console.iol"
+include "./public/interfaces/HttpInterface.iol"
 
-interface HTTPInterface {
-  RequestResponse:
-  checkResoucesByEtag(undefined)(undefined),
-  default(undefined)(undefined)
-}
 
 
 interface ControlInterface {
@@ -19,10 +16,20 @@ Protocol: http
 Interfaces: HTTPInterface
 }
 
+
+type EtagTypeRequest:void{
+    .IfNoneMatch:any
+}
+interface extender ETagInterface {
+    RequestResponse:
+        default(EtagTypeRequest)(any)
+}
+
 inputPort HttpPort {
 Location: "socket://localhost:8081"
 Protocol: http{
-  .debug= true;
+  .debug= false;
+  .debug.showContent = false;
   .statusCode -> statusCode;
   .debug.showContent= true;
   .default ="default";
@@ -30,11 +37,20 @@ Protocol: http{
   .format -> format;
   .contentType -> mime;
   .addHeader.header[0] = "ETag";
-  .addHeader.header[0].value -> ETag
+  .addHeader.header[0].value -> ETag;
+  .compression = false
 
 }
 Interfaces: ControlInterface
-Aggregates: Frontend
+Aggregates: Frontend with ETagInterface
+}
+
+type EtagTypeRequest:void{
+    .IfNoneMatch:any
+}
+interface extender ETagInterface {
+    RequestResponse:
+        default(EtagTypeRequest)(any)
 }
 
 embedded {
@@ -50,11 +66,13 @@ courier HttpPort {
                response ="";
                ETag = checkResoucesByEtagResponse.ETag
            }else{
+
              forward( request )( responseForward );
-             response = responseForward;
              format =  responseForward.format;
              mime =  responseForward.mime;
-             ETag = checkResoucesByEtagResponse.ETag
+             ETag = checkResoucesByEtagResponse.ETag;
+             response = responseForward
+
            }
     }
 }

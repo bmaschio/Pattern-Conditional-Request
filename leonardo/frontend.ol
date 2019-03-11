@@ -2,13 +2,9 @@ include "string_utils.iol"
 include "message_digest.iol"
 include "file.iol"
 include "console.iol"
+include "/public/interfaces/HttpInterface.iol"
 
 
-interface HTTPInterface {
-  RequestResponse:
-  checkResoucesByEtag(undefined)(undefined),
-  default(undefined)(undefined)
-}
 
 
 inputPort Frontend {
@@ -48,15 +44,15 @@ main{
      mime.regex = "/";
      split@StringUtils( mime )( s );
      if ( s.result[0] == "text" ) {
-       file.format = "text";
-        response.format = "html"
+        file.format = "text";
+        format = "html"
      } else {
-       file.format = response.format = "binary"
+       file.format = format = "binary"
      };
 
      readFile@File( file )( response );
-     response.format = file.format;
-    response.mime = mime 
+     response.format = format;
+     response.mime = mime
 
    }
     }]
